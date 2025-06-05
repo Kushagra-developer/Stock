@@ -43,17 +43,6 @@ def generate_signals(df):
 
 
 
-# --- AUTO-REFRESH EVERY 30 SECONDS ---
-import time
-
-REFRESH_INTERVAL = 10  # seconds
-
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-
-if time.time() - st.session_state.last_refresh >= REFRESH_INTERVAL:
-    st.session_state.last_refresh = time.time()
-    st.experimental_rerun()
 
 # --------- LOAD DATA FUNCTION ---------
 @st.cache_data
