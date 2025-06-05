@@ -39,21 +39,15 @@ def generate_signals(df):
 
     return df
 
+# Auto-refresh the page every 10 seconds using JavaScript
+st.markdown(f"""
+    <meta http-equiv="refresh" content="{REFRESH_INTERVAL}">
+""", unsafe_allow_html=True)
 
 
-
-
-# --- AUTO-REFRESH EVERY 30 SECONDS ---
-import time
 
 REFRESH_INTERVAL = 10  # seconds
-
-if "last_refresh" not in st.session_state:
-    st.session_state.last_refresh = time.time()
-
-if time.time() - st.session_state.last_refresh >= REFRESH_INTERVAL:
-    st.session_state.last_refresh = time.time()
-    st.experimental_rerun()
+st.markdown(f"<meta http-equiv='refresh' content='{REFRESH_INTERVAL}'>", unsafe_allow_html=True)
 
 # --------- LOAD DATA FUNCTION ---------
 @st.cache_data
