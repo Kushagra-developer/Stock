@@ -53,7 +53,7 @@ def load_data(folder_path):
         df = clean_columns(df)
         df = generate_signals(df)
         all_dfs.append(df)
-    if not all_dfs:
+    iif len(all_dfs) == 0:
         st.error("No CSV files loaded. Please check your data folder and files.")
         st.stop()
     combined_df = pd.concat(all_dfs, ignore_index=True)
