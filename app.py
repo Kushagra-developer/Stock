@@ -297,7 +297,7 @@ active_positions = risk_summary[risk_summary['Position_Type'].isin(['BUY', 'SELL
 
 if not active_positions.empty:
     st.sidebar.dataframe(
-        active_positions.style.applymap(
+        active_positions.style.map(
             lambda x: 'background-color: #D5F4E6; color: #27AE60; font-weight: bold' if x == 'BUY' else
                       'background-color: #FADBD8; color: #E74C3C; font-weight: bold' if x == 'SELL' else
                       'color: gray'
@@ -381,7 +381,7 @@ else:
     available_columns = [col for col in display_columns if col in filtered_data.columns]
     
     st.dataframe(
-        filtered_data[available_columns].style.applymap(
+        filtered_data[available_columns].style.map(
             lambda x: 'background-color: #D5F4E6; color: #27AE60; font-weight: bold' if x == 'BUY' else
                       'background-color: #FADBD8; color: #E74C3C; font-weight: bold' if x == 'SELL' else
                       'background-color: #F8F9FA; color: #6C757D' if x == 'HOLD' else ''
@@ -473,7 +473,7 @@ with col4:
 
 # Display full portfolio summary
 st.dataframe(
-    portfolio_summary.style.applymap(
+    portfolio_summary.style.map(
         lambda x: 'background-color: #D5F4E6; color: #27AE60; font-weight: bold' if x == 'BUY' else
                   'background-color: #FADBD8; color: #E74C3C; font-weight: bold' if x == 'SELL' else
                   'background-color: #F8F9FA; color: #6C757D' if x == 'HOLD' else ''
