@@ -13,17 +13,17 @@ def calculate_risk_management(entry_price, position_type):
         return None, None, None, None
     
     if position_type == 'BUY':
-        take_profit = entry_price * 1.05  # 5% profit
-        stop_loss = entry_price * 0.98    # 2% loss
+        take_profit = entry_price * 1.05 
+        stop_loss = entry_price * 0.98   
         profit_pct = 5.0
         loss_pct = 2.0
-        risk_reward_ratio = profit_pct / loss_pct  # 2.5:1
+        risk_reward_ratio = profit_pct / loss_pct  
     elif position_type == 'SELL':
-        take_profit = entry_price * 0.99  # 1% profit
-        stop_loss = entry_price * 1.07    # 7% loss
+        take_profit = entry_price * 0.99 
+        stop_loss = entry_price * 1.07   
         profit_pct = 1.0
         loss_pct = 7.0
-        risk_reward_ratio = profit_pct / loss_pct  # 0.14:1
+        risk_reward_ratio = profit_pct / loss_pct  
     else:
         return None, None, None, None
     
