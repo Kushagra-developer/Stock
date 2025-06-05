@@ -395,7 +395,7 @@ else:
     chart_data = filtered_data.reset_index()
     
     # Base price chart
-    base = alt.Chart(chart_data).add_selection(
+    base = alt.Chart(chart_data).add_params(
         alt.selection_interval()
     ).properties(width=800, height=400)
     
