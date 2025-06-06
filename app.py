@@ -6,6 +6,30 @@ import os
 import time
 import numpy as np
 
+
+def generate_signals(df):
+    df = df.copy()
+
+    if "MACD" in df.columns and "Signal" in df.columns:
+        df["MACD_buy"] = (df["MACD"] > df["Signal"]) & (df["MACD"].shift(1) <= df["Signal"].shift(1))
+        df["MACD_sell"] = (df["MACD"] < df["Signal"]) & (df["MACD"].shift(1) >= df["Signal"].shift(1))
+
+    if "RSI" in df.columns:
+        df["RSI_buy"] = df["RSI"] < 30
+        df["RSI_sell"] = df["RSI"] > 70
+
+    if "Aroon Up" in df.columns and "Aroon Down" in df.columns:
+        df["AROON_buy"] = (df["Aroon Up"] > df["Aroon Down"]) & (df["Aroon Up"].shift(1) <= df["Aroon Down"].shift(1))
+        df["AROON_sell"] = (df["Aroon Up"] < df["Aroon Down"]) & (df["Aroon Up"].shift(1) >= df["Aroon Down"].shift(1))
+
+    if "Supertrend" in df.columns and "Close" in df.columns:
+        df["SUPER_buy"] = (df["Close"] > df["Supertrend"]) & (df["Close"].shift(1) <= df["Supertrend"].shift(1))
+        df["SUPER_sell"] = (df["Close"] < df["Supertrend"]) & (df["Close"].shift(1) >= df["Supertrend"].shift(1))
+
+    return df
+
+
+
 # --------- RISK MANAGEMENT FUNCTIONS ---------
 def calculate_risk_management(entry_price, position_type):
     """Calculate take profit and stop loss based on position type"""
@@ -42,6 +66,10 @@ def calculate_position_size(account_balance, risk_per_trade, entry_price, stop_l
     
     position_size = risk_amount / price_diff
     return round(position_size, 2)
+
+
+
+
 
 # --------- COLUMN CLEANING FUNCTION ---------
 def clean_columns(df):
@@ -139,6 +167,8 @@ def generate_signals_with_risk_management(df, account_balance=100000, risk_per_t
             return 'SELL'
         else:
             return 'HOLD'
+
+
 
     # Apply position type determination
     df['Position_Type'] = df.apply(determine_position_type, axis=1)
@@ -279,6 +309,35 @@ if st.session_state.blink_state:
     </style>
     """, unsafe_allow_html=True)
 
+
+
+    widget_html = """
+<!-- TradingView Widget BEGIN -->
+<div class="tradingview-widget-container">
+  <div id="tradingview_12345"></div>
+  <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+  <script type="text/javascript">
+  new TradingView.widget(
+  {
+  "width": 800,
+  "height": 600,
+  "symbol": "NASDAQ:AAPL",
+  "interval": "D",
+  "timezone": "Etc/UTC",
+  "theme": "light",
+  "style": "1",
+  "locale": "en",
+  "toolbar_bg": "#f1f3f6",
+  "enable_publishing": false,
+  "allow_symbol_change": true,
+  "container_id": "tradingview_12345"
+  }
+  );
+  </script>
+</div>
+<!-- TradingView Widget END -->
+"""
+
 # --------- LOAD AND PROCESS DATA ---------
 with st.spinner("Loading NIFTY 100 technical analysis data..."):
     data = load_data(DATA_FOLDER)
@@ -389,62 +448,61 @@ else:
         use_container_width=True
     )
 
-    # --------- PRICE CHART WITH RISK LEVELS ---------
     st.subheader("📊 Price Chart with Risk Management Levels")
-    
-    chart_data = filtered_data.reset_index()
-    
-    # Base price chart
-    base = alt.Chart(chart_data).add_params(
-        alt.selection_interval()
-    ).properties(width=800, height=400)
-    
-    # Price line
-    price_line = base.mark_line(strokeWidth=2, color='blue').encode(
-        x=alt.X('index:O', title='Time Period'),
-        y=alt.Y(f'{close_col}:Q', title='Price (₹)'),
-        tooltip=[alt.Tooltip('Symbol'), alt.Tooltip(f'{close_col}:Q', title='Price')]
-    )
-    
-    # Take profit line
-    tp_line = base.mark_line(strokeWidth=1, color='green', strokeDash=[5,5]).encode(
-        x='index:O',
-        y=alt.Y('Take_Profit:Q'),
-        tooltip=[alt.Tooltip('Take_Profit:Q', title='Take Profit')]
-    )
-    
-    # Stop loss line
-    sl_line = base.mark_line(strokeWidth=1, color='red', strokeDash=[5,5]).encode(
-        x='index:O',
-        y=alt.Y('Stop_Loss:Q'),
-        tooltip=[alt.Tooltip('Stop_Loss:Q', title='Stop Loss')]
-    )
-    
-    # Buy/Sell signals
-    buy_points = base.mark_circle(size=100, color='green', opacity=0.8).encode(
-        x='index:O',
-        y=f'{close_col}:Q',
-        tooltip=['Symbol', 'Position_Type']
-    ).transform_filter(
-        alt.datum.Position_Type == 'BUY'
-    )
-    
-    sell_points = base.mark_circle(size=100, color='red', opacity=0.8).encode(
-        x='index:O',
-        y=f'{close_col}:Q',
-        tooltip=['Symbol', 'Position_Type']
-    ).transform_filter(
-        alt.datum.Position_Type == 'SELL'
-    )
-    
-    # Combine all chart elements
-    final_chart = alt.layer(price_line, tp_line, sl_line, buy_points, sell_points).resolve_scale(
-        y='independent'
-    ).properties(
-        title=f"{selected_company} - Price with Risk Management Levels"
-    )
-    
-    st.altair_chart(final_chart, use_container_width=True)
+
+chart_data = filtered_data.reset_index()
+
+# Base chart properties
+width, height = 800, 400
+
+# 1. Price line chart
+price_line = alt.Chart(chart_data).mark_line(strokeWidth=2, color='blue').encode(
+    x=alt.X('index:O', title='Time Period'),
+    y=alt.Y(f'{close_col}:Q', title='Price (₹)'),
+    tooltip=['Symbol', alt.Tooltip(f'{close_col}:Q', title='Price')]
+).properties(width=width, height=height, title=f"{selected_company} - Price Chart")
+
+st.altair_chart(price_line, use_container_width=True)
+
+# 2. Take profit line chart
+tp_line = alt.Chart(chart_data).mark_line(strokeWidth=1, color='green', strokeDash=[5,5]).encode(
+    x='index:O',
+    y=alt.Y('Take_Profit:Q', title='Take Profit'),
+    tooltip=[alt.Tooltip('Take_Profit:Q', title='Take Profit')]
+).properties(width=width, height=height, title=f"{selected_company} - Take Profit Levels")
+
+st.altair_chart(tp_line, use_container_width=True)
+
+# 3. Stop loss line chart
+sl_line = alt.Chart(chart_data).mark_line(strokeWidth=1, color='red', strokeDash=[5,5]).encode(
+    x='index:O',
+    y=alt.Y('Stop_Loss:Q', title='Stop Loss'),
+    tooltip=[alt.Tooltip('Stop_Loss:Q', title='Stop Loss')]
+).properties(width=width, height=height, title=f"{selected_company} - Stop Loss Levels")
+
+st.altair_chart(sl_line, use_container_width=True)
+
+# 4. Buy signals chart
+buy_points = alt.Chart(chart_data).mark_circle(size=100, color='green', opacity=0.8).encode(
+    x='index:O',
+    y=f'{close_col}:Q',
+    tooltip=['Symbol', 'Position_Type']
+).transform_filter(
+    alt.datum.Position_Type == 'BUY'
+).properties(width=width, height=height, title=f"{selected_company} - Buy Signals")
+
+st.altair_chart(buy_points, use_container_width=True)
+
+# 5. Sell signals chart
+sell_points = alt.Chart(chart_data).mark_circle(size=100, color='red', opacity=0.8).encode(
+    x='index:O',
+    y=f'{close_col}:Q',
+    tooltip=['Symbol', 'Position_Type']
+).transform_filter(
+    alt.datum.Position_Type == 'SELL'
+).properties(width=width, height=height, title=f"{selected_company} - Sell Signals")
+
+st.altair_chart(sell_points, use_container_width=True)
 
 # --------- PORTFOLIO RISK SUMMARY ---------
 st.subheader("💼 Portfolio Risk Summary")
@@ -499,5 +557,4 @@ if manual_tp and manual_sl:
 
 # --------- FOOTER ---------
 st.markdown("---")
-st.markdown("💡 **Risk Management Logic**: BUY positions target 5% profit with 2% stop loss. SELL positions target 1% profit with 7% stop loss.")
 st.markdown("⚠️ **Disclaimer**: This is for educational purposes only. Always consult with a financial advisor before making investment decisions.")
