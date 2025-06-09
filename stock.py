@@ -4,7 +4,6 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import pytz
 import pandas as pd
-import pandas_ta as ta # Import pandas-ta
 import os
 os.system("pip install plotly")
 # --- Page Configuration ---
