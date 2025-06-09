@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 import pytz
 import pandas as pd
 import pandas_ta as ta # Import pandas-ta
-
+import os
+os.system("pip install plotly")
 # --- Page Configuration ---
 st.set_page_config(layout="wide")
 st.title("📈 NIFTY 100 - Intraday Chart + Historical Data with Technical Indicators")
