@@ -2,6 +2,7 @@ import streamlit as st
 import yfinance as yf
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import pandas_ta as ta
 import pytz
 import pandas as pd
 import os
